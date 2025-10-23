@@ -220,7 +220,7 @@ All ready to use:
 
 1. **Docker Compose** (local/single server)
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 2. **Kubernetes** (scale/production)

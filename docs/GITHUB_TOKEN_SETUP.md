@@ -238,7 +238,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 
 ```bash
 # Start RuvScan:
-docker-compose up -d
+docker compose up -d
 
 # Trigger a scan:
 ./scripts/ruvscan scan org ruvnet --limit 5
@@ -280,7 +280,7 @@ When your token expires or you need to rotate:
    GITHUB_TOKEN=ghp_new_token_here
 
    # Restart RuvScan:
-   docker-compose restart
+   docker compose restart
    ```
 3. **Revoke old token**:
    - Go to https://github.com/settings/tokens
@@ -391,7 +391,7 @@ Once you have your token:
 
 2. **Start RuvScan**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. **Scan away**:

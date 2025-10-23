@@ -85,7 +85,7 @@ cd ruvscan
 bash scripts/setup.sh
 
 # Start (Docker - easiest)
-docker-compose up -d
+docker compose up -d
 
 # Output:
 ✅ RuvScan started on http://localhost:8000
@@ -509,7 +509,7 @@ Year 2:    Can't imagine coding without it
 # Try it right now:
 git clone https://github.com/ruvnet/ruvscan.git
 cd ruvscan
-docker-compose up -d
+docker compose up -d
 
 # Ask it about YOUR current problem:
 ./scripts/ruvscan query "Your actual problem here"

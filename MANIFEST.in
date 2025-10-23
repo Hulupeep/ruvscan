@@ -1,0 +1,24 @@
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+include .env.example
+include .mcp.json.example
+
+recursive-include src/mcp *.py
+recursive-include docs *.md
+
+exclude docker-compose.yml
+exclude docker-compose.prod.yml
+exclude Makefile
+exclude .gitignore
+exclude .env
+exclude .env.local
+
+recursive-exclude tests *
+recursive-exclude docker *
+recursive-exclude scripts *
+recursive-exclude .git *
+recursive-exclude .github *
+recursive-exclude examples *
+recursive-exclude k8s *

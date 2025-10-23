@@ -1,19 +1,140 @@
-# 🧠 RuvScan
+# 🧠 RuvScan - MCP Server for Intelligent GitHub Discovery
 
 [![License](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-green.svg)](https://modelcontextprotocol.io)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/badge/PyPI-ruvscan--mcp-blue.svg)](https://pypi.org/project/ruvscan-mcp/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](docker-compose.yml)
-[![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-> **The AI that finds the code you didn't know you needed.**
+> **Give Claude the power to discover GitHub tools with sublinear intelligence.**
 
-RuvScan turns GitHub into your personal innovation scout. Ask it what you're building, and it finds tools, frameworks, and ideas from across the open-source world — even ones you'd never think to search for.
+RuvScan is a **Model Context Protocol (MCP) server** that connects to Claude Code CLI, Codex, and Claude Desktop. It turns GitHub into your AI's personal innovation scout — finding tools, frameworks, and solutions you'd never think to search for.
 
-**No keyword searching. No browsing docs for hours. Just describe your problem, get instant leverage.**
+**Not keyword matching. Not manual browsing. Just AI-powered discovery with O(log n) semantic search.**
 
 ---
 
-## 🎯 For Builders: What Is This?
+## ⚡ Install in 30 Seconds
+
+### For Claude Code CLI
+
+```bash
+# 1. Start RuvScan backend
+git clone https://github.com/ruvnet/ruvscan.git && cd ruvscan
+docker compose up -d
+
+# 2. Add MCP server to Claude
+claude mcp add ruvscan --scope user --env GITHUB_TOKEN=ghp_your_token -- uvx ruvscan-mcp
+
+# 3. Start using it!
+claude
+```
+
+### For Claude Desktop
+
+**1. Start the backend:**
+```bash
+git clone https://github.com/ruvnet/ruvscan.git && cd ruvscan
+docker compose up -d
+```
+
+**2. Add to config** (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+```json
+{
+  "mcpServers": {
+    "ruvscan": {
+      "command": "uvx",
+      "args": ["ruvscan-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_your_github_token_here"
+      }
+    }
+  }
+}
+```
+
+**3. Restart Claude Desktop** (Cmd+Q and reopen)
+
+**📖 Full Installation Guide:** [docs/MCP_INSTALL.md](docs/MCP_INSTALL.md)
+
+---
+
+## 💬 Using RuvScan in Claude
+
+Once installed, just talk to Claude naturally:
+
+### Example 1: Scan GitHub Organizations
+
+**You:** "Scan the Anthropics GitHub organization"
+
+**Claude:** *Uses `scan_github` tool*
+```
+Scan initiated for org: anthropics
+Status: initiated
+Estimated repositories: 50
+Message: Scan initiated - workers processing in background
+```
+
+### Example 2: Find Solutions for Your Problem
+
+**You:** "I'm building a real-time AI app. My context retrieval from the vector database is too slow. What can help?"
+
+**Claude:** *Uses `query_leverage` tool and shows you:*
+
+```
+Repository: ruvnet/sublinear-time-solver
+Relevance Score: 0.94
+Complexity: O(log n)
+
+Summary: TRUE O(log n) matrix solver with Johnson-Lindenstrauss projection
+
+Why This Helps: Don't search your entire vector database. Use JL projection
+to reduce dimensionality from 1536 → O(log n), then search in compressed space.
+600× faster with <3% accuracy loss.
+
+How to Use: Install as MCP tool via: npx sublinear-time-solver mcp
+
+Capabilities: O(log n) solving, WASM acceleration, MCP integration
+```
+
+### Example 3: Compare Frameworks
+
+**You:** "Compare facebook/react and vuejs/core for me"
+
+**Claude:** *Uses `compare_repositories` tool*
+```
+Repository Comparison (O(log n) complexity)
+
+facebook/react vs vuejs/core
+
+Similarity Score: 0.78
+Complexity: O(log n)
+
+Analysis: Both are component-based UI frameworks with virtual DOM, but React
+has larger ecosystem and more enterprise adoption. Vue has simpler learning
+curve and better built-in state management.
+```
+
+### Example 4: Understand the Reasoning
+
+**You:** "Show me the reasoning chain for why you recommended that solver"
+
+**Claude:** *Uses `analyze_reasoning` tool*
+```
+Reasoning Chain for ruvnet/sublinear-time-solver:
+
+- Detected performance optimization intent
+- Matched O(log n) complexity with vector search problem
+- Found Johnson-Lindenstrauss dimension reduction capability
+- Cross-domain transfer from scientific computing to AI/ML
+- Verified WASM support for browser integration
+
+(Retrieved from FACT deterministic cache)
+```
+
+---
+
+## 🎯 What Is This?
 
 **RuvScan is GitHub search that actually understands what you're trying to build.**
 
@@ -117,9 +238,66 @@ Found 8 leverage opportunities:
 
 ---
 
-## ⚡ Quick Start (2 Minutes)
+## 🛠️ What Tools Does Claude Get?
 
-### Option 1: Docker (Easiest)
+When you install RuvScan as an MCP server, Claude gains 4 powerful tools:
+
+| Tool | What It Does | Example Use |
+|------|--------------|-------------|
+| **`scan_github`** | Scan any GitHub org, user, or topic | "Scan the openai organization" |
+| **`query_leverage`** | Find relevant tools with O(log n) semantic search | "Find tools for real-time collaboration" |
+| **`compare_repositories`** | Compare repos with sublinear similarity | "Compare NextJS vs Remix" |
+| **`analyze_reasoning`** | View FACT cache reasoning chains | "Why did you recommend that library?" |
+
+---
+
+## 🎬 Demo: Complete Workflow
+
+### In Claude Code CLI
+
+```bash
+$ claude
+
+You: I'm working on a Python project that processes large datasets.
+     The performance is terrible. What GitHub tools could help?
+
+Claude: Let me search for high-performance data processing tools...
+        [Uses query_leverage tool]
+
+        I found several relevant projects:
+
+        1. ruvnet/sublinear-time-solver (Relevance: 0.94)
+           - TRUE O(log n) algorithms for matrix operations
+           - Could replace your O(n²) operations with O(log n)
+           - Install: pip install sublinear-solver
+
+        2. apache/arrow (Relevance: 0.88)
+           - Columnar data format for fast analytics
+           - 100× faster than pandas for large datasets
+
+        Would you like me to scan the Apache organization to find more tools?
+
+You: Yes, scan the apache organization
+
+Claude: [Uses scan_github tool]
+        Scanning Apache Foundation repositories...
+        Found 150+ repositories. Indexing them now.
+```
+
+### In Claude Desktop
+
+<img src="https://via.placeholder.com/800x400/1e1e1e/00ff00?text=Claude+Desktop+Screenshot" alt="Claude Desktop with RuvScan" />
+
+1. Open Claude Desktop
+2. See the tools icon (🔧) showing RuvScan is connected
+3. Ask questions naturally - Claude uses RuvScan automatically
+4. Get intelligent suggestions with reasoning chains
+
+---
+
+## ⚡ Alternative: Run as Standalone API (2 Minutes)
+
+### Option 1: Docker (For Direct API Use)
 
 ```bash
 # 1. Clone and setup
@@ -131,13 +309,13 @@ cp .env.example .env
 # GITHUB_TOKEN=ghp_your_token_here
 
 # 3. Start everything
-docker-compose up -d
+docker compose up -d
 
 # 4. Try it!
 ./scripts/ruvscan query "Find tools for real-time AI performance"
 ```
 
-### Option 2: Use the API
+### Option 2: Direct HTTP API
 
 ```bash
 # Query for leverage
@@ -149,7 +327,7 @@ curl -X POST http://localhost:8000/query \
   }'
 ```
 
-### Option 3: Integrate in Your Code
+### Option 3: Python Integration
 
 ```python
 import httpx
@@ -586,7 +764,7 @@ RuvScan implements the Model Context Protocol for IDE/Agent integration:
 
 ```bash
 # Using Docker
-docker-compose up -d
+docker compose up -d
 
 # Manual
 bash scripts/setup.sh
@@ -597,7 +775,7 @@ make dev
 
 **Docker Compose:**
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 **Kubernetes:**
@@ -731,6 +909,6 @@ Instead of reinventing the wheel, developers discover existing solutions — eve
 **Try it now:**
 ```bash
 git clone https://github.com/ruvnet/ruvscan.git
-cd ruvscan && docker-compose up -d
+cd ruvscan && docker compose up -d
 ./scripts/ruvscan query "Show me what RuvScan can do"
 ```

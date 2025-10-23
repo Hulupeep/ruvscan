@@ -121,7 +121,7 @@ Systems you can build:
 - Discovery platforms
 - Research tools
 
-Install: docker-compose up -d
+Install: docker compose up -d
 Docs: docs/QUICK_START.md"
 
 git push origin v0.5.0

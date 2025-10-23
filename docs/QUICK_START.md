@@ -15,11 +15,8 @@ You've already set up `.env.local` with:
 ### Start All Services
 
 ```bash
-# Using docker compose (newer)
+# Start services with Docker Compose V2
 docker compose up -d
-
-# OR using docker-compose (older)
-docker-compose up -d
 ```
 
 This starts:

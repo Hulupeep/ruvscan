@@ -197,7 +197,7 @@ bash scripts/setup.sh
 
 ### Run with Docker
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Run Manually

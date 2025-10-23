@@ -5,6 +5,34 @@ All notable changes to RuvScan will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2025-10-23
+
+### Changed
+- **BREAKING**: Updated to Docker Compose V2 syntax (use `docker compose` instead of `docker-compose`)
+- Removed obsolete `version` field from docker-compose.yml
+- Updated all documentation to use Docker Compose V2 commands
+- Updated all scripts to use Docker Compose V2 syntax
+
+### Added
+- Complete MCP (Model Context Protocol) server implementation
+- Claude Code CLI integration support
+- Claude Desktop integration support
+- New documentation:
+  - `docs/MCP_INSTALL.md` - Complete MCP installation guide
+  - `docs/QUICK_MCP_START.md` - 30-second MCP setup guide
+  - `docs/MCP_QUICK_REFERENCE.md` - Quick reference for MCP usage
+  - `docs/CLAUDE_CODE_EXAMPLES.md` - Claude Code CLI examples
+  - `docs/CLAUDE_DESKTOP_EXAMPLES.md` - Claude Desktop examples
+  - `QUICK_START_LOCAL.md` - Local development quick start
+- Python package configuration (setup.py, pyproject.toml, MANIFEST.in)
+- MCP stdio server for Claude integration
+- Example .mcp.json configuration
+
+### Fixed
+- Docker Compose V2 compatibility issues
+- All shell scripts updated for modern Docker syntax
+- Documentation consistency across all files
+
 ## [0.5.0] - 2025-10-23
 
 ### Added

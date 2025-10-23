@@ -8,7 +8,7 @@
 
 ```bash
 # Production docker-compose
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 **Requirements**:
@@ -182,7 +182,7 @@ SUPABASE_KEY=your_anon_key
 
 ```bash
 # docker-compose.postgres.yml
-docker-compose -f docker-compose.yml -f docker-compose.postgres.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.postgres.yml up -d
 ```
 
 ## SSL/TLS Configuration
@@ -222,7 +222,7 @@ labels:
 **Python MCP Server**:
 ```bash
 # Docker Compose
-docker-compose up --scale mcp-server=3
+docker compose up --scale mcp-server=3
 
 # Kubernetes
 kubectl scale deployment ruvscan-mcp --replicas=3
@@ -375,13 +375,13 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 ```bash
 # Check logs
-docker-compose logs -f mcp-server
+docker compose logs -f mcp-server
 
 # Check resource usage
 docker stats
 
 # Verify environment
-docker-compose config
+docker compose config
 ```
 
 ### High Memory Usage
@@ -441,9 +441,9 @@ PRAGMA cache_size = 10000;
 
 ```bash
 # Docker Compose
-docker-compose down
-docker-compose pull
-docker-compose up -d
+docker compose down
+docker compose pull
+docker compose up -d
 
 # Kubernetes
 kubectl rollout undo deployment/ruvscan-mcp

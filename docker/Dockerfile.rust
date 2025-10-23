@@ -3,12 +3,13 @@
 # Build stage
 FROM rust:1.83 as builder
 
-# Install protobuf compiler and BLAS/LAPACK for linear algebra
+# Install protobuf compiler, BLAS/LAPACK, and pkg-config
 RUN apt-get update && apt-get install -y \
     protobuf-compiler \
     libopenblas-dev \
     liblapack-dev \
     gfortran \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -21,7 +22,9 @@ COPY src/rust/build.rs ./
 COPY src/rust/proto ./proto
 
 # Create dummy src to cache dependencies (both lib and binary)
-RUN mkdir -p src && \
+# Clean cargo registry completely to avoid corruption issues
+RUN rm -rf /usr/local/cargo/registry && \
+    mkdir -p src && \
     echo "pub fn dummy() {}" > src/lib.rs && \
     echo "fn main() {}" > src/main.rs && \
     cargo build --release && \
@@ -31,6 +34,10 @@ RUN mkdir -p src && \
 COPY src/rust/src ./src
 
 # Build the application (proto files already in place)
+# Set environment variables for ndarray-linalg OpenBLAS backend
+ENV BLAS=openblas
+ENV OPENBLAS_STATIC=0
+ENV OPENBLAS_NUM_THREADS=1
 RUN cargo build --release
 
 # Runtime stage

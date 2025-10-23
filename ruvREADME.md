@@ -101,13 +101,13 @@ go build -o scanner ./scanner
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # Check logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop services
-docker-compose down
+docker compose down
 ```
 
 ### Running Manually

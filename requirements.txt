@@ -1,5 +1,8 @@
 # Python dependencies for RuvScan MCP Server
 
+# MCP SDK (for STDIO server)
+mcp[cli]>=1.2.0
+
 # Web framework
 fastapi==0.109.0
 uvicorn[standard]==0.27.0

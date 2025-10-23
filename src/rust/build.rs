@@ -14,5 +14,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )?;
 
     println!("cargo:rerun-if-changed=proto/sublinear.proto");
+
+    // Link against OpenBLAS for linear algebra operations
+    // ndarray-linalg with openblas-system feature handles this automatically
+    // but we ensure the linker can find it
+    println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
+    println!("cargo:rustc-link-lib=dylib=openblas");
+    println!("cargo:rustc-link-lib=dylib=gfortran");
+
     Ok(())
 }
