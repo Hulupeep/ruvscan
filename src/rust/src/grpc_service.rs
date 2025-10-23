@@ -9,9 +9,9 @@ use crate::sublinear::{
     sublinear_similarity, batch_sublinear_similarity, cosine_similarity, JLProjection
 };
 
-// Include generated proto code
+// Include generated proto code from OUT_DIR (set by build.rs)
 pub mod sublinear_proto {
-    tonic::include_proto!("ruvscan.sublinear");
+    include!(concat!(env!("OUT_DIR"), "/ruvscan.sublinear.rs"));
 }
 
 use sublinear_proto::{

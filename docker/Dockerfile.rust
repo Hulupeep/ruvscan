@@ -3,13 +3,25 @@
 # Build stage
 FROM rust:1.83 as builder
 
+# Install protobuf compiler and BLAS/LAPACK for linear algebra
+RUN apt-get update && apt-get install -y \
+    protobuf-compiler \
+    libopenblas-dev \
+    liblapack-dev \
+    gfortran \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /build
 
-# Copy Cargo files
+# Copy Cargo files and build script
 COPY src/rust/Cargo.toml src/rust/Cargo.lock* ./
+COPY src/rust/build.rs ./
+
+# Copy proto files (needed by build.rs)
+COPY src/rust/proto ./proto
 
 # Create dummy src to cache dependencies (both lib and binary)
-RUN mkdir src && \
+RUN mkdir -p src && \
     echo "pub fn dummy() {}" > src/lib.rs && \
     echo "fn main() {}" > src/main.rs && \
     cargo build --release && \
@@ -17,9 +29,8 @@ RUN mkdir src && \
 
 # Copy actual source code
 COPY src/rust/src ./src
-COPY src/rust/proto ./proto
 
-# Build the application
+# Build the application (proto files already in place)
 RUN cargo build --release
 
 # Runtime stage
@@ -27,9 +38,12 @@ FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# Install runtime dependencies
+# Install runtime dependencies (including BLAS/LAPACK for linear algebra)
 RUN apt-get update && apt-get install -y \
     ca-certificates \
+    libopenblas0 \
+    liblapack3 \
+    libgfortran5 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder

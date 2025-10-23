@@ -262,24 +262,44 @@ func (s *Scanner) processResults() {
 func main() {
 	log.Printf("RuvScan GitHub Scanner v%s", Version)
 
-	// Load config from environment or file
-	config := ScanConfig{
-		SourceType: os.Getenv("RUVSCAN_SOURCE_TYPE"),
-		SourceName: os.Getenv("RUVSCAN_SOURCE_NAME"),
-		Limit:      50, // Default limit
-		Token:      os.Getenv("GITHUB_TOKEN"),
-		MCPEndpoint: os.Getenv("RUVSCAN_MCP_ENDPOINT"),
+	// Check if running in server mode (default)
+	mode := os.Getenv("SCANNER_MODE")
+	if mode == "" {
+		mode = "server" // Default to HTTP server
 	}
 
-	if config.SourceType == "" || config.SourceName == "" {
-		log.Fatal("RUVSCAN_SOURCE_TYPE and RUVSCAN_SOURCE_NAME must be set")
+	switch mode {
+	case "server":
+		// Run as HTTP server waiting for API calls
+		log.Println("Starting in HTTP server mode")
+		if err := RunServer(); err != nil {
+			log.Fatalf("Server failed: %v", err)
+		}
+
+	case "cli":
+		// Run as CLI tool with immediate scan
+		log.Println("Starting in CLI mode")
+		config := ScanConfig{
+			SourceType:  os.Getenv("RUVSCAN_SOURCE_TYPE"),
+			SourceName:  os.Getenv("RUVSCAN_SOURCE_NAME"),
+			Limit:       50, // Default limit
+			Token:       os.Getenv("GITHUB_TOKEN"),
+			MCPEndpoint: os.Getenv("RUVSCAN_MCP_ENDPOINT"),
+		}
+
+		if config.SourceType == "" || config.SourceName == "" {
+			log.Fatal("RUVSCAN_SOURCE_TYPE and RUVSCAN_SOURCE_NAME must be set in CLI mode")
+		}
+
+		scanner := NewScanner(config)
+
+		if err := scanner.Run(); err != nil {
+			log.Fatalf("Scan failed: %v", err)
+		}
+
+		log.Println("Scan completed successfully")
+
+	default:
+		log.Fatalf("Unknown SCANNER_MODE: %s (use 'server' or 'cli')", mode)
 	}
-
-	scanner := NewScanner(config)
-
-	if err := scanner.Run(); err != nil {
-		log.Fatalf("Scan failed: %v", err)
-	}
-
-	log.Println("Scan completed successfully")
 }

@@ -46,10 +46,12 @@ services:
       context: .
       dockerfile: docker/Dockerfile.go
     container_name: ruvscan-scanner
+    ports:
+      - "8081:8080"
     environment:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - RUVSCAN_SOURCE_TYPE=${RUVSCAN_SOURCE_TYPE:-org}
-      - RUVSCAN_SOURCE_NAME=${RUVSCAN_SOURCE_NAME:-ruvnet}
+      - SCANNER_MODE=server
+      - SCANNER_PORT=8080
       - RUVSCAN_MCP_ENDPOINT=http://mcp-server:8000/ingest
     depends_on:
       - mcp-server

@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("🦀 RuvScan Sublinear Engine v0.5.0");
     info!("TRUE O(log n) Semantic Computation");
 
-    let addr = "[::1]:50051".parse()?;
+    let addr = "0.0.0.0:50051".parse()?;
     let service = SublinearServiceImpl::default();
 
     info!("🚀 Starting gRPC server on {}", addr);
