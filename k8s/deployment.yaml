@@ -1,0 +1,154 @@
+# Kubernetes deployment for RuvScan
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ruvscan-mcp
+  namespace: ruvscan
+  labels:
+    app: ruvscan-mcp
+    component: orchestrator
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ruvscan-mcp
+  template:
+    metadata:
+      labels:
+        app: ruvscan-mcp
+    spec:
+      containers:
+      - name: mcp-server
+        image: ruvscan/mcp-server:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ruvscan-secrets
+              key: github-token
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ruvscan-secrets
+              key: openai-api-key
+        - name: RUST_ENGINE_HOST
+          value: "ruvscan-rust"
+        - name: RUST_ENGINE_PORT
+          value: "50051"
+        - name: DATABASE_TYPE
+          value: "sqlite"
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: ruvscan-data
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ruvscan-rust
+  namespace: ruvscan
+  labels:
+    app: ruvscan-rust
+    component: engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ruvscan-rust
+  template:
+    metadata:
+      labels:
+        app: ruvscan-rust
+    spec:
+      containers:
+      - name: rust-engine
+        image: ruvscan/rust-engine:latest
+        ports:
+        - containerPort: 50051
+          name: grpc
+        env:
+        - name: RUST_LOG
+          value: "info"
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ruvscan-mcp
+  namespace: ruvscan
+spec:
+  type: LoadBalancer
+  selector:
+    app: ruvscan-mcp
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ruvscan-rust
+  namespace: ruvscan
+spec:
+  type: ClusterIP
+  selector:
+    app: ruvscan-rust
+  ports:
+  - port: 50051
+    targetPort: 50051
+    protocol: TCP
+    name: grpc
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ruvscan-data
+  namespace: ruvscan
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

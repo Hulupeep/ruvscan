@@ -1,0 +1,104 @@
+// Protocol Buffers definition for RuvScan Sublinear Engine gRPC service
+
+syntax = "proto3";
+
+package ruvscan.sublinear;
+
+// Sublinear computation service
+service SublinearService {
+  // Compute similarity between query and corpus vectors
+  rpc ComputeSimilarity (SimilarityRequest) returns (SimilarityResponse);
+
+  // Compare two vectors
+  rpc CompareVectors (CompareRequest) returns (CompareResponse);
+
+  // Analyze matrix properties
+  rpc AnalyzeMatrix (MatrixRequest) returns (MatrixAnalysis);
+
+  // Solve using TRUE O(log n) algorithm
+  rpc SolveTrueSublinear (SolveRequest) returns (SolveResponse);
+}
+
+// Vector message
+message Vector {
+  repeated double values = 1;
+}
+
+// Sparse matrix in COO format
+message SparseMatrix {
+  repeated double values = 1;
+  repeated int32 row_indices = 2;
+  repeated int32 col_indices = 3;
+  int32 rows = 4;
+  int32 cols = 5;
+}
+
+// Similarity computation request
+message SimilarityRequest {
+  Vector query = 1;
+  repeated Vector corpus = 2;
+  double distortion = 3;
+  int32 max_results = 4;
+}
+
+// Similarity match
+message SimilarityMatch {
+  int32 index = 1;
+  double score = 2;
+}
+
+// Similarity response
+message SimilarityResponse {
+  repeated SimilarityMatch matches = 1;
+  string complexity = 2;
+  double computation_time_ms = 3;
+  int32 dimension_reduction_ratio = 4;
+}
+
+// Compare vectors request
+message CompareRequest {
+  Vector vec_a = 1;
+  Vector vec_b = 2;
+  double distortion = 3;
+}
+
+// Compare response
+message CompareResponse {
+  double similarity = 1;
+  string complexity = 2;
+  string method_used = 3;
+  double computation_time_ms = 4;
+}
+
+// Matrix analysis request
+message MatrixRequest {
+  SparseMatrix matrix = 1;
+}
+
+// Matrix analysis response
+message MatrixAnalysis {
+  bool is_sparse = 1;
+  bool is_symmetric = 2;
+  bool is_diagonally_dominant = 3;
+  string recommended_method = 4;
+  string complexity_estimate = 5;
+  double condition_number_estimate = 6;
+}
+
+// Solve request
+message SolveRequest {
+  SparseMatrix matrix = 1;
+  Vector vector = 2;
+  int32 target_dimension = 3;
+  double distortion = 4;
+}
+
+// Solve response
+message SolveResponse {
+  Vector solution = 1;
+  string method_used = 2;
+  string actual_complexity = 3;
+  double residual_norm = 4;
+  int32 iterations = 5;
+  bool converged = 6;
+}

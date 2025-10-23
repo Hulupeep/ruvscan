@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Python MCP Orchestrator
+  mcp-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.python
+    container_name: ruvscan-mcp
+    ports:
+      - "8000:8000"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RUST_ENGINE_HOST=rust-engine
+      - RUST_ENGINE_PORT=50051
+      - DATABASE_TYPE=sqlite
+      - SQLITE_PATH=/data/ruvscan.db
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+    depends_on:
+      - rust-engine
+    networks:
+      - ruvscan-network
+    restart: unless-stopped
+
+  # Rust Sublinear Engine
+  rust-engine:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.rust
+    container_name: ruvscan-rust
+    ports:
+      - "50051:50051"
+    environment:
+      - RUST_LOG=info
+    networks:
+      - ruvscan-network
+    restart: unless-stopped
+
+  # Go Scanner Workers
+  scanner:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.go
+    container_name: ruvscan-scanner
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - RUVSCAN_SOURCE_TYPE=${RUVSCAN_SOURCE_TYPE:-org}
+      - RUVSCAN_SOURCE_NAME=${RUVSCAN_SOURCE_NAME:-ruvnet}
+      - RUVSCAN_MCP_ENDPOINT=http://mcp-server:8000/ingest
+    depends_on:
+      - mcp-server
+    networks:
+      - ruvscan-network
+    restart: unless-stopped
+
+networks:
+  ruvscan-network:
+    driver: bridge
+
+volumes:
+  ruvscan-data:

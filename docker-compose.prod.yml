@@ -1,0 +1,48 @@
+# Production overrides for docker-compose.yml
+
+version: '3.8'
+
+services:
+  mcp-server:
+    restart: always
+    environment:
+      - LOG_LEVEL=WARNING
+      - WORKERS=4
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  rust-engine:
+    restart: always
+    environment:
+      - RUST_LOG=warn
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  scanner:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M

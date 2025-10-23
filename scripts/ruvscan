@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""
+RuvScan CLI - Command-line interface for RuvScan MCP server
+"""
+
+import click
+import httpx
+import json
+import sys
+from typing import Optional
+from pathlib import Path
+import os
+
+# Default server URL
+DEFAULT_SERVER = "http://localhost:8000"
+
+class RuvScanCLI:
+    """CLI client for RuvScan"""
+
+    def __init__(self, server_url: str = DEFAULT_SERVER):
+        self.server_url = server_url
+        self.client = httpx.Client(base_url=server_url, timeout=30.0)
+
+    def scan(self, source_type: str, source_name: str, limit: int = 50):
+        """Trigger GitHub scan"""
+        try:
+            response = self.client.post("/scan", json={
+                "source_type": source_type,
+                "source_name": source_name,
+                "limit": limit
+            })
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+
+    def query(self, intent: str, max_results: int = 10, min_score: float = 0.7):
+        """Query for leverage cards"""
+        try:
+            response = self.client.post("/query", json={
+                "intent": intent,
+                "max_results": max_results,
+                "min_score": min_score
+            })
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+
+    def compare(self, repo_a: str, repo_b: str):
+        """Compare two repositories"""
+        try:
+            response = self.client.post("/compare", json={
+                "repo_a": repo_a,
+                "repo_b": repo_b
+            })
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+
+    def get_cards(self, limit: int = 50, min_score: float = 0.0):
+        """Get saved leverage cards"""
+        try:
+            response = self.client.get("/cards", params={
+                "limit": limit,
+                "min_score": min_score
+            })
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+
+@click.group()
+@click.option('--server', default=DEFAULT_SERVER, help='RuvScan server URL')
+@click.pass_context
+def cli(ctx, server):
+    """RuvScan CLI - Sublinear-intelligence scanning for GitHub"""
+    ctx.obj = RuvScanCLI(server_url=server)
+
+@cli.command()
+@click.argument('source_type', type=click.Choice(['org', 'user', 'topic']))
+@click.argument('source_name')
+@click.option('--limit', default=50, help='Maximum repos to scan')
+@click.pass_obj
+def scan(cli_client, source_type, source_name, limit):
+    """Scan GitHub org/user/topic for repositories"""
+    click.echo(f"Scanning {source_type}: {source_name} (limit: {limit})")
+
+    result = cli_client.scan(source_type, source_name, limit)
+
+    click.echo("\n✅ Scan initiated:")
+    click.echo(f"   Status: {result.get('status')}")
+    click.echo(f"   Source: {result.get('source_type')} / {result.get('source_name')}")
+    click.echo(f"   Estimated repos: {result.get('estimated_repos')}")
+    click.echo(f"   Message: {result.get('message')}")
+
+@cli.command()
+@click.argument('intent')
+@click.option('--max-results', default=10, help='Maximum results to return')
+@click.option('--min-score', default=0.7, help='Minimum relevance score')
+@click.pass_obj
+def query(cli_client, intent, max_results, min_score):
+    """Query for leverage based on intent"""
+    click.echo(f"Querying: {intent}\n")
+
+    cards = cli_client.query(intent, max_results, min_score)
+
+    if not cards:
+        click.echo("No results found.")
+        return
+
+    click.echo(f"Found {len(cards)} leverage opportunities:\n")
+
+    for i, card in enumerate(cards, 1):
+        click.echo(f"{i}. {card['repo']} (score: {card['relevance_score']:.2f})")
+        click.echo(f"   Capabilities: {', '.join(card['capabilities'])}")
+        click.echo(f"   Summary: {card['summary']}")
+        click.echo(f"   💡 Insight: {card['outside_box_reasoning']}")
+        click.echo(f"   🔧 Integration: {card['integration_hint']}")
+        if card.get('runtime_complexity'):
+            click.echo(f"   ⚡ Complexity: {card['runtime_complexity']}")
+        click.echo()
+
+@cli.command()
+@click.argument('repo_a')
+@click.argument('repo_b')
+@click.pass_obj
+def compare(cli_client, repo_a, repo_b):
+    """Compare two repositories using sublinear algorithm"""
+    click.echo(f"Comparing:\n  {repo_a}\n  vs\n  {repo_b}\n")
+
+    result = cli_client.compare(repo_a, repo_b)
+
+    click.echo("Comparison Results:")
+    click.echo(f"  Similarity: {result.get('similarity_score', 0):.2f}")
+    click.echo(f"  Complexity: {result.get('complexity', 'N/A')}")
+    click.echo(f"  Analysis: {result.get('analysis', 'N/A')}")
+
+@cli.command()
+@click.option('--limit', default=50, help='Maximum cards to retrieve')
+@click.option('--min-score', default=0.0, help='Minimum relevance score')
+@click.pass_obj
+def cards(cli_client, limit, min_score):
+    """List saved leverage cards"""
+    result = cli_client.get_cards(limit, min_score)
+
+    cards = result.get('cards', [])
+    total = result.get('total', 0)
+
+    click.echo(f"Leverage Cards (showing {len(cards)} of {total}):\n")
+
+    if not cards:
+        click.echo("No cards found.")
+        return
+
+    for i, card in enumerate(cards, 1):
+        click.echo(f"{i}. {card.get('repo', 'Unknown')} ({card.get('relevance_score', 0):.2f})")
+        click.echo(f"   {card.get('summary', 'No summary')}")
+        click.echo()
+
+@cli.command()
+def serve():
+    """Start the RuvScan MCP server"""
+    click.echo("Starting RuvScan MCP Server...")
+    click.echo("Run: python -m uvicorn src.mcp.server:app --reload")
+
+@cli.command()
+def version():
+    """Show version information"""
+    click.echo("RuvScan v0.5.0")
+    click.echo("Sublinear-intelligence MCP server")
+    click.echo("\nComponents:")
+    click.echo("  • Python MCP Orchestrator")
+    click.echo("  • Rust Sublinear Engine")
+    click.echo("  • Go Scanning Workers")
+
+if __name__ == '__main__':
+    cli()

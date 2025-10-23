@@ -1,0 +1,48 @@
+# Python dependencies for RuvScan MCP Server
+
+# Web framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# HTTP client
+httpx==0.26.0
+requests==2.31.0
+
+# gRPC
+grpcio==1.60.0
+grpcio-tools==1.60.0
+protobuf==4.25.1
+
+# Database
+sqlalchemy==2.0.25
+aiosqlite==0.19.0
+
+# Supabase (optional)
+supabase==2.3.0
+
+# AI/ML
+openai==1.10.0
+anthropic==0.8.1
+numpy==1.26.3
+scikit-learn==1.4.0
+
+# Utilities
+python-dotenv==1.0.0
+pyyaml==6.0.1
+python-multipart==0.0.6
+
+# Logging
+python-json-logger==2.0.7
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+httpx-test==0.24.0
+
+# Development
+black==24.1.1
+ruff==0.1.14
+mypy==1.8.0

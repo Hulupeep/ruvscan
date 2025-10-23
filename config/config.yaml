@@ -1,0 +1,81 @@
+# RuvScan Configuration
+
+# Server configuration
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  log_level: "info"
+
+# Database configuration
+database:
+  type: "sqlite"  # sqlite or supabase
+  sqlite:
+    path: "data/ruvscan.db"
+  supabase:
+    url: "${SUPABASE_URL}"
+    key: "${SUPABASE_KEY}"
+
+# Rust sublinear engine
+rust_engine:
+  host: "localhost"
+  port: 50051
+  timeout: 30
+  distortion: 0.5  # JL distortion parameter
+
+# Go scanner configuration
+scanner:
+  workers: 10
+  rate_limit_padding: 100
+  default_limit: 50
+  timeout: 300
+  github_token: "${GITHUB_TOKEN}"
+
+# LLM configuration
+llm:
+  provider: "openai"  # openai, anthropic, local
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 2000
+  embedding_model: "text-embedding-3-small"
+
+# FACT cache configuration
+fact:
+  enabled: true
+  version: "0.5.0"
+  determinism_check: true
+
+# SAFLA reasoning configuration
+safla:
+  enabled: true
+  confidence_threshold: 0.7
+  max_reasoning_steps: 10
+  domains:
+    - algorithmic
+    - architectural
+    - performance
+    - scalability
+    - integration
+    - domain_transfer
+
+# Sublinear computation
+sublinear:
+  default_method: "auto"  # auto, neumann, forward-push, backward-push, random-walk
+  target_dimension: 16
+  max_iterations: 1000
+  epsilon: 1e-6
+
+# Performance targets
+performance:
+  query_timeout: 3000  # ms
+  scan_timeout: 60000  # ms
+  max_repos_per_scan: 1000
+  min_relevance_score: 0.7
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/ruvscan.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
