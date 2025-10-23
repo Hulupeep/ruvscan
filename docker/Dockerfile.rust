@@ -3,14 +3,21 @@
 # Build stage
 FROM rust:1.83 as builder
 
-# Install protobuf compiler, BLAS/LAPACK, and pkg-config
+# Install protobuf compiler, BLAS/LAPACK (both static and dynamic), and pkg-config
 RUN apt-get update && apt-get install -y \
     protobuf-compiler \
     libopenblas-dev \
+    libopenblas0-pthread \
     liblapack-dev \
     gfortran \
     pkg-config \
+    cmake \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
+
+# Set environment for static linking
+ENV OPENBLAS_STATIC=1
+ENV OPENBLAS_NUM_THREADS=1
 
 WORKDIR /build
 
@@ -34,23 +41,20 @@ RUN rm -rf /usr/local/cargo/registry && \
 COPY src/rust/src ./src
 
 # Build the application (proto files already in place)
-# Set environment variables for ndarray-linalg OpenBLAS backend
+# Set environment variables for ndarray-linalg static OpenBLAS backend
 ENV BLAS=openblas
-ENV OPENBLAS_STATIC=0
 ENV OPENBLAS_NUM_THREADS=1
-RUN cargo build --release
+RUN cargo build --release --verbose 2>&1 | tee /tmp/build.log
 
 # Runtime stage
 FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# Install runtime dependencies (including BLAS/LAPACK for linear algebra)
+# Install minimal runtime dependencies
+# Note: With static linking, we only need basic C libraries
 RUN apt-get update && apt-get install -y \
     ca-certificates \
-    libopenblas0 \
-    liblapack3 \
-    libgfortran5 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder

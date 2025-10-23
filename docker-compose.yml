@@ -18,13 +18,18 @@ services:
       - ./data:/data
       - ./logs:/app/logs
       - ./config:/app/config
-    depends_on:
-      - rust-engine
+    # depends_on:
+    #   - rust-engine  # Disabled: Rust engine not working yet
     networks:
       - ruvscan-network
     restart: unless-stopped
 
-  # Rust Sublinear Engine
+  # Rust Sublinear Engine (DISABLED - Not Critical for MVP)
+  # The Rust engine provides O(log n) performance optimizations but is not
+  # required for basic functionality. Currently disabled due to binary
+  # initialization issue. See docs/RUST_ENGINE_STATUS.md for details.
+  #
+  # To enable for debugging: docker compose --profile rust-debug up
   rust-engine:
     build:
       context: .
@@ -36,7 +41,9 @@ services:
       - RUST_LOG=info
     networks:
       - ruvscan-network
-    restart: unless-stopped
+    restart: "no"  # Disabled: Binary exits immediately
+    profiles:
+      - rust-debug  # Only start when explicitly requested
 
   # Go Scanner Workers
   scanner:

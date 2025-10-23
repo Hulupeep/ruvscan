@@ -15,12 +15,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("cargo:rerun-if-changed=proto/sublinear.proto");
 
-    // Link against OpenBLAS for linear algebra operations
-    // ndarray-linalg with openblas-system feature handles this automatically
-    // but we ensure the linker can find it
-    println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
-    println!("cargo:rustc-link-lib=dylib=openblas");
-    println!("cargo:rustc-link-lib=dylib=gfortran");
+    // For openblas-static, we need to explicitly link the static library
+    // The openblas-src crate builds it but we need to tell the linker where it is
+    if let Ok(openblas_path) = std::env::var("DEP_OPENBLAS_SRC") {
+        println!("cargo:rustc-link-search=native={}", openblas_path);
+        println!("cargo:rustc-link-lib=static=openblas");
+        println!("cargo:rustc-link-lib=dylib=gfortran");
+    } else {
+        // Fallback to system OpenBLAS if available
+        println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
+        println!("cargo:rustc-link-lib=static=openblas");
+        println!("cargo:rustc-link-lib=dylib=gfortran");
+    }
 
     Ok(())
 }
