@@ -59,6 +59,41 @@ docker compose up -d
 
 ---
 
+## 🌱 Database Seeding (Recommended)
+
+**RuvScan works best when pre-seeded with repository data.** On first installation, seed the database with ruvnet's repositories (or any GitHub user/org) for immediate functionality:
+
+```bash
+# Seed with default (ruvnet's repos)
+python3 scripts/seed_database.py
+
+# Or seed with another user/org
+python3 scripts/seed_database.py --org openai --limit 30
+
+# Fast seeding (skip README fetching)
+python3 scripts/seed_database.py --no-readmes
+```
+
+**Why Seed?**
+- ✅ **Instant Results** - Start querying immediately without waiting for slow GitHub API scans
+- ✅ **Pre-populated** - Database comes with working example data
+- ✅ **Easy Updates** - Re-run the script periodically to refresh
+
+**Updating Data:**
+```bash
+# Rescan and update existing repos
+python3 scripts/seed_database.py --org ruvnet
+
+# Check what's in the database
+sqlite3 data/ruvscan.db "SELECT COUNT(*) FROM repos;"
+```
+
+⚠️ **Note:** The database tracks `last_scan` timestamps. Re-running the seed script updates existing repos and adds new ones. **Rescan periodically** (weekly for development, monthly for production) to keep data fresh.
+
+📚 **Full Guide:** [Database Seeding Documentation](docs/DATABASE_SEEDING.md)
+
+---
+
 ## 💬 Using RuvScan in Claude
 
 Once installed, just talk to Claude naturally:
