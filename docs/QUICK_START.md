@@ -1,255 +1,253 @@
-# RuvScan Quick Start Guide
+# 🚀 Quick Start Guide
 
-Get RuvScan up and running in 5 minutes!
+Get RuvScan running in 5 minutes.
 
 ## Prerequisites
 
-- **Docker & Docker Compose** (recommended) OR
-- **Python 3.11+**, **Rust 1.75+**, **Go 1.21+** (for manual setup)
-- **GitHub Personal Access Token** ([Create one here](https://github.com/settings/tokens))
-- **OpenAI API Key** (optional, for embeddings)
+You've already set up `.env.local` with:
+- `GITHUB_TOKEN` - Your GitHub Personal Access Token
+- `OPENAI_API_KEY` - Your OpenAI API key
+
+✅ Environment verified!
 
 ## Option 1: Docker (Recommended)
 
-### 1. Clone and Setup
+### Start All Services
 
 ```bash
-git clone https://github.com/ruvnet/ruvscan.git
-cd ruvscan
+# Using docker compose (newer)
+docker compose up -d
 
-# Copy environment template
-cp .env.example .env
-```
-
-### 2. Configure Environment
-
-Edit `.env` and add your tokens:
-
-```bash
-GITHUB_TOKEN=ghp_your_github_token_here
-OPENAI_API_KEY=sk-your_openai_key_here
-```
-
-### 3. Start All Services
-
-```bash
-# Build and start
+# OR using docker-compose (older)
 docker-compose up -d
-
-# Check status
-docker-compose ps
-
-# View logs
-docker-compose logs -f
 ```
 
-That's it! RuvScan is now running at `http://localhost:8000`
+This starts:
+- **MCP Server** (Python/FastAPI) on port 8000
+- **Rust Engine** (gRPC) on port 50051  
+- **Go Scanner** (Workers) in background
 
-### 4. Test the API
+### Verify Services
 
 ```bash
-# Health check
+# Check health
 curl http://localhost:8000/health
 
-# List MCP tools
-curl http://localhost:8000/mcp/tools
+# Should return:
+# {"status":"healthy","version":"0.5.0"}
+```
 
-# Scan a GitHub org
+### Your First Scan
+
+```bash
+# Scan an organization's repositories
 curl -X POST http://localhost:8000/scan \
-  -H "Content-Type: application/json" \
-  -d '{"source_type":"org","source_name":"ruvnet","limit":10}'
+  -H 'Content-Type: application/json' \
+  -d '{
+    "source_type": "org",
+    "name": "ruvnet",
+    "limit": 10
+  }'
+```
 
-# Query for leverage
+### Your First Query
+
+```bash
+# Ask RuvScan for leverage
 curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"intent":"How can I speed up my AI context system?"}'
+  -H 'Content-Type: application/json' \
+  -d '{
+    "intent": "How can I optimize my AI application performance?",
+    "max_results": 5,
+    "min_score": 0.7
+  }'
 ```
 
-## Option 2: Manual Setup
+## Option 2: Manual (Development)
 
-### 1. Clone and Setup
+### 1. Install Dependencies
 
+**Python:**
 ```bash
-git clone https://github.com/ruvnet/ruvscan.git
-cd ruvscan
-
-# Run setup script
-bash scripts/setup.sh
+cd src/mcp
+pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
-
+**Rust:**
 ```bash
-cp .env.example .env
-# Edit .env with your tokens
+cd src/rust
+cargo build --release
 ```
 
-### 3. Start Services Manually
+**Go:**
+```bash
+cd src/go/scanner
+go mod download
+```
+
+### 2. Start Services
 
 **Terminal 1 - Rust Engine:**
 ```bash
 cd src/rust
 cargo run --release
+# Runs on localhost:50051
 ```
 
 **Terminal 2 - Python MCP Server:**
 ```bash
-python -m uvicorn src.mcp.server:app --reload
+cd src/mcp
+uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+# Runs on localhost:8000
 ```
 
 **Terminal 3 - Go Scanner (optional):**
 ```bash
 cd src/go/scanner
-export RUVSCAN_SOURCE_TYPE=org
-export RUVSCAN_SOURCE_NAME=ruvnet
 go run main.go
 ```
 
-## Using the CLI
-
-### Scan a GitHub Organization
+### 3. Test It
 
 ```bash
-./scripts/ruvscan scan org ruvnet --limit 20
+# Health check
+curl http://localhost:8000/health
+
+# Scan repos
+curl -X POST http://localhost:8000/scan \
+  -H 'Content-Type: application/json' \
+  -d '{"source_type":"user","name":"ruvnet","limit":5}'
+
+# Query leverage
+curl -X POST http://localhost:8000/query \
+  -H 'Content-Type: application/json' \
+  -d '{"intent":"Speed up vector database","max_results":3}'
 ```
 
-### Query for Leverage
+## Option 3: Using Helper Scripts
 
 ```bash
-./scripts/ruvscan query "How can I optimize my AI context retrieval?"
+# Make scripts executable
+chmod +x scripts/*.sh
+
+# Scan a user's repositories
+./scripts/ruvscan scan user ruvnet --limit 10
+
+# Query for leverage
+./scripts/ruvscan query "How to build real-time collaboration features?"
+
+# Compare two solutions
+./scripts/ruvscan compare "vector-db-v1" "vector-db-v2"
 ```
 
-### Compare Repositories
+## Common Operations
+
+### View Scanned Repositories
 
 ```bash
-./scripts/ruvscan compare ruvnet/sublinear-time-solver ruvnet/FACT
+# List all scanned repos
+curl http://localhost:8000/repos
 ```
 
-### List Saved Leverage Cards
+### Get Specific Leverage Card
 
 ```bash
-./scripts/ruvscan cards --limit 10 --min-score 0.7
+# Get leverage card by ID
+curl http://localhost:8000/leverage/{card_id}
 ```
 
-## Integration with Claude Desktop
+### Check FACT Cache
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "ruvscan": {
-      "command": "docker",
-      "args": ["run", "-p", "8000:8000", "ruvscan/mcp-server"]
-    }
-  }
-}
-```
-
-Or for local installation:
-
-```json
-{
-  "mcpServers": {
-    "ruvscan": {
-      "command": "python",
-      "args": ["-m", "uvicorn", "src.mcp.server:app", "--host", "0.0.0.0", "--port", "8000"],
-      "cwd": "/path/to/ruvscan"
-    }
-  }
-}
-```
-
-## Example Queries
-
-### Find Performance Tools
 ```bash
-./scripts/ruvscan query "Find tools for optimizing real-time performance"
+# View cached reasoning
+curl http://localhost:8000/cache/stats
 ```
 
-### Discover Context Management Solutions
+## Monitoring
+
+### View Logs
+
+**Docker:**
 ```bash
-./scripts/ruvscan query "How can I improve context memory in my LLM application?"
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f mcp-server
+docker compose logs -f rust-engine
+docker compose logs -f scanner
 ```
 
-### Search for Sublinear Algorithms
+**Manual:**
+Check terminal outputs for each service.
+
+### Check Service Health
+
 ```bash
-./scripts/ruvscan query "What are the best sublinear algorithms for similarity search?"
+# MCP Server health
+curl http://localhost:8000/health
+
+# Rust Engine health (if exposed)
+curl http://localhost:50051/health
 ```
 
 ## Troubleshooting
 
-### Docker Issues
+### Port Already in Use
 
 ```bash
-# Reset everything
-docker-compose down
-docker-compose up --build -d
+# Find and kill process on port 8000
+lsof -ti:8000 | xargs kill -9
 
-# Check logs
-docker-compose logs -f mcp-server
-docker-compose logs -f rust-engine
-docker-compose logs -f scanner
+# Or change port in docker-compose.yml or .env
 ```
 
-### Python Issues
+### Services Won't Start
 
 ```bash
-# Reinstall dependencies
-pip install -r requirements.txt --force-reinstall
+# View detailed logs
+docker compose logs
 
-# Check Python version
-python --version  # Should be 3.11+
+# Restart services
+docker compose restart
+
+# Rebuild if needed
+docker compose build --no-cache
+docker compose up -d
 ```
 
-### Rust Build Issues
+### API Key Issues
 
 ```bash
-cd src/rust
-cargo clean
-cargo build --release
+# Verify .env.local
+cat .env.local
+
+# Should contain:
+# GITHUB_TOKEN=ghp_...
+# OPENAI_API_KEY=sk-...
 ```
 
 ### Database Issues
 
 ```bash
-# Reinitialize database
-rm data/ruvscan.db
-make init-db
+# Reset database
+rm -f data/ruvscan.db
+docker compose restart mcp-server
 ```
 
 ## Next Steps
 
-1. **Scan Your Organization**
-   ```bash
-   ./scripts/ruvscan scan org YOUR_ORG_NAME --limit 50
-   ```
+1. **Read the Full README** - [README.md](../README.md)
+2. **Explore User Experience** - [USER_EXPERIENCE.md](USER_EXPERIENCE.md)
+3. **Contribute** - [CONTRIBUTING.md](../CONTRIBUTING.md)
+4. **Check Examples** - [examples/](../examples/)
 
-2. **Explore the API**
-   - Visit `http://localhost:8000/docs` for interactive API docs
-   - Check out `docs/api/MCP_PROTOCOL.md` for MCP integration
+## Getting Help
 
-3. **Customize Configuration**
-   - Edit `config/config.yaml` for advanced settings
-   - Adjust Rust engine parameters
-   - Configure SAFLA reasoning domains
+- **Issues**: https://github.com/Hulupeep/ruvscan/issues
+- **Discussions**: https://github.com/Hulupeep/ruvscan/discussions
+- **Documentation**: All docs in `docs/` folder
 
-4. **Integrate with Your Workflow**
-   - Add to Claude Desktop
-   - Use with TabStax
-   - Call from your custom agents
+---
 
-## Support
-
-- **Documentation**: `/docs` folder
-- **Issues**: [GitHub Issues](https://github.com/ruvnet/ruvscan/issues)
-- **Discord**: Join the Ruvnet community
-
-## Performance Tips
-
-1. **Use Docker** - Optimized for production
-2. **Enable Caching** - FACT cache speeds up repeated queries
-3. **Batch Scans** - Scan multiple orgs in parallel
-4. **Tune Distortion** - Lower = more accurate, higher = faster (default: 0.5)
-
-Happy scanning! 🧠🚀
+**Ready to discover leverage?** 🚀
