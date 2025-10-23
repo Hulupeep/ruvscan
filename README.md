@@ -1,5 +1,10 @@
 # 🧠 RuvScan
 
+[![License](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](docker-compose.yml)
+[![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 > **The AI that finds the code you didn't know you needed.**
 
 RuvScan turns GitHub into your personal innovation scout. Ask it what you're building, and it finds tools, frameworks, and ideas from across the open-source world — even ones you'd never think to search for.
