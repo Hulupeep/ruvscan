@@ -7,8 +7,8 @@ pydantic==2.5.3
 pydantic-settings==2.1.0
 
 # HTTP client
-httpx==0.26.0
-requests==2.31.0
+httpx>=0.24.0
+requests>=2.31.0
 
 # gRPC
 grpcio==1.60.0
@@ -20,7 +20,7 @@ sqlalchemy==2.0.25
 aiosqlite==0.19.0
 
 # Supabase (optional)
-supabase==2.3.0
+supabase>=2.3.0
 
 # AI/ML
 openai==1.10.0
@@ -40,7 +40,7 @@ python-json-logger==2.0.7
 pytest==7.4.4
 pytest-asyncio==0.23.3
 pytest-cov==4.1.0
-httpx-test==0.24.0
+pytest-httpx==0.30.0
 
 # Development
 black==24.1.1

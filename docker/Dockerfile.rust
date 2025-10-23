@@ -1,15 +1,16 @@
 # Rust Sublinear Engine Dockerfile
 
 # Build stage
-FROM rust:1.75 as builder
+FROM rust:1.83 as builder
 
 WORKDIR /build
 
 # Copy Cargo files
 COPY src/rust/Cargo.toml src/rust/Cargo.lock* ./
 
-# Create dummy src to cache dependencies
+# Create dummy src to cache dependencies (both lib and binary)
 RUN mkdir src && \
+    echo "pub fn dummy() {}" > src/lib.rs && \
     echo "fn main() {}" > src/main.rs && \
     cargo build --release && \
     rm -rf src
