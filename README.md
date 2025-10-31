@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/hulupeep-ruvscan-badge.png)](https://mseep.ai/app/hulupeep-ruvscan)
+
 # 🧠 RuvScan - MCP Server for Intelligent GitHub Discovery
 
 [![License](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
