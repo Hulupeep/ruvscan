@@ -1167,11 +1167,7 @@ RuvScan stands on the shoulders of giants:
 
 ---
 
-## 💬 Community
-
-- **GitHub**: [ruvnet/ruvscan](https://github.com/ruvnet/ruvscan)
-- **Issues**: [Report bugs](https://github.com/ruvnet/ruvscan/issues)
-- **Discussions**: [Ideas & Questions](https://github.com/ruvnet/ruvscan/discussions)
+ 
 
 ---
 
@@ -1188,10 +1184,4 @@ Instead of reinventing the wheel, developers discover existing solutions — eve
  
 
 ---
-
-**Try it now:**
-```bash
-git clone https://github.com/ruvnet/ruvscan.git
-cd ruvscan && docker compose up -d
-./scripts/ruvscan query "Show me what RuvScan can do"
-```
+ 
