@@ -1185,11 +1185,7 @@ Instead of reinventing the wheel, developers discover existing solutions — eve
 
 ---
 
-<p align="center">
-  <strong>🧠 Built with sublinear intelligence by <a href="https://github.com/ruvnet">Ruvnet</a></strong>
-  <br>
-  <i>Making discovery sublinear since 2025</i>
-</p>
+ 
 
 ---
 
