@@ -299,6 +299,33 @@ Re‑start the MCP server and it will only know about the repos you just seeded 
 
 ---
 
+## 🤔 How RuvScan Suggests Some Tools (and Skips Others)
+
+RuvScan scores every cached repository against your intent using three simple signals:
+
+1. **Token overlap** – does the repo description/README mention the same concepts you typed?
+2. **Efficiency boost** – extra credit for words like “optimize,” “streaming,” “sublinear,” etc.
+3. **Reality check** – star count and recent scans nudge mature, maintained projects upward.
+
+The goal is to surface repos that obviously help without making you stretch too far.
+
+### Real example: “Scan email for policy updates”
+
+- **Your ask:** “Build a tool that scans incoming email for important policy updates and compliance requirements.”
+- **What surfaced:** `freeCodeCamp/mail-for-good`, `DusanKasan/parsemail`, `ruvnet/FACT`, etc. Those repos talk about *email parsing*, *campaign pipelines*, and *deterministic summaries*—keywords that overlap the request almost perfectly.
+- **What you expected:** `ruvnet/sublinear-time-solver` (which includes a DOM extractor that could chew through large HTML archives).
+- **Why it was skipped:** the solver’s README highlights *Johnson–Lindenstrauss projection*, *sparse matrix solvers*, and *Flow-Nexus streaming*. None of those tokens match “email,” “policy,” or “compliance,” so its overlap score stayed below the default `min_score=0.6`. RuvScan saw it as “clever infrastructure, but unrelated to your words,” so it deferred to mail-focused repos.
+
+### How to explore outside-the-box options
+
+- **Nudge the intent:** mention the bridge explicitly (“…or should I repurpose sublinear-time-solver’s DOM tool for compliance emails?”). Now the tokenizer sees “sublinear” and “DOM,” boosting that repo.
+- **Lower the threshold:** call `query_leverage` with `min_score=0.4` and `max_results=10` to let more fringe ideas through.
+- **Widen the context:** add an engineering note or PRD link so the SAFLA reasoning layer understands why a matrix solver might help an email scanner.
+
+By default, RuvScan errs on the side of *obvious fit*. If you want it to wander into “this sounds weird but might work” territory, just give it permission with a hint or a looser score cutoff.
+
+---
+
 ## 💬 Using RuvScan in Claude
 
 Once installed, just talk to Claude naturally:
