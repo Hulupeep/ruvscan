@@ -34,6 +34,8 @@ curl http://localhost:8000/health
 # {"status":"healthy","version":"0.5.0"}
 ```
 
+> 💡 **Already have data!** The repo includes `data/ruvscan.db` preloaded with the public ruvnet catalog, so you can jump straight to querying. Only run a scan if you want to refresh that data or add another GitHub org/user.
+
 ### Your First Scan
 
 ```bash
@@ -66,7 +68,7 @@ curl -X POST http://localhost:8000/query \
 
 **Python:**
 ```bash
-cd src/mcp
+cd src/ruvscan_mcp
 pip install -r requirements.txt
 ```
 
@@ -93,7 +95,7 @@ cargo run --release
 
 **Terminal 2 - Python MCP Server:**
 ```bash
-cd src/mcp
+cd src/ruvscan_mcp
 uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 # Runs on localhost:8000
 ```

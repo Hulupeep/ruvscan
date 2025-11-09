@@ -2,7 +2,9 @@
 
 ## Overview
 
-RuvScan comes pre-configured to seed the database with **ruvnet's repositories** on first setup. This provides an immediate, working experience without waiting for slow GitHub API scans.
+Each clone of RuvScan already ships with `data/ruvscan.db` filled with roughly 100 public projects from the **ruvnet** GitHub organization (think `ruvnet/sublinear-time-solver`, `ruvnet/FACT`, `ruvnet/MidStream`, etc.). You can run the MCP server immediately and start asking questions without touching any scripts.
+
+The seeding workflow below is therefore **optional**—use it when you want to refresh that bundled catalog, add your own org/user, or rebuild the database from scratch.
 
 ## Quick Start
 
@@ -17,7 +19,8 @@ cd ruvscan
 cp .env.example .env.local
 # Edit .env.local and add your GITHUB_TOKEN
 
-# 3. Seed the database (pre-populate with ruvnet repos)
+# 3. (Optional) Refresh or extend the database
+#    Skip if you're happy with the included ruvnet dataset.
 python3 scripts/seed_database.py
 
 # 4. Start RuvScan
@@ -67,6 +70,13 @@ python3 scripts/seed_database.py \
   --db data/custom.db \   # Custom database path
   --no-readmes            # Skip README fetching (much faster)
 ```
+
+### Prefer using the MCP tools?
+
+- Inside Claude / Codex say: **“Use scan_github on org anthropics with limit 25.”**
+- Or run the bundled CLI: `./scripts/ruvscan scan org anthropics --limit 25`
+
+Both routes feed new repositories into the same SQLite database alongside the preloaded ruvnet entries.
 
 ## What Gets Seeded?
 

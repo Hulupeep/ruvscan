@@ -59,36 +59,39 @@ docker compose up -d
 
 ---
 
-## 🌱 Database Seeding (Recommended)
+## 🌱 Sample Data & Optional Seeding
 
-**RuvScan works best when pre-seeded with repository data.** On first installation, seed the database with ruvnet's repositories (or any GitHub user/org) for immediate functionality:
+Out of the box, RuvScan already includes a `data/ruvscan.db` file packed with ~100 public repositories from the **ruvnet** organization. That means a fresh clone can answer questions like “What do we have for real-time streaming?” as soon as the MCP server starts—no extra steps required.
+
+### When would I run the seed script?
+
+- **Refresh the included catalog** (pick up new ruvnet repos or README changes).
+- **Add another user/org** so your local MCP knows about your own code.
+- **Rebuild the database** after deleting `data/ruvscan.db`.
 
 ```bash
-# Seed with default (ruvnet's repos)
-python3 scripts/seed_database.py
+# Refresh the bundled ruvnet dataset
+python3 scripts/seed_database.py --org ruvnet
 
-# Or seed with another user/org
+# Add a different org or user (ex. OpenAI)
 python3 scripts/seed_database.py --org openai --limit 30
 
-# Fast seeding (skip README fetching)
+# Skip README downloads for a quick metadata-only pass
 python3 scripts/seed_database.py --no-readmes
 ```
 
-**Why Seed?**
-- ✅ **Instant Results** - Start querying immediately without waiting for slow GitHub API scans
-- ✅ **Pre-populated** - Database comes with working example data
-- ✅ **Easy Updates** - Re-run the script periodically to refresh
+Prefer clicks over scripts? Tell your MCP client:
+- **Claude / Codex prompt:** “Use scan_github on org anthropics with a limit of 25.”
+- **CLI:** `./scripts/ruvscan scan org anthropics --limit 25`
 
-**Updating Data:**
+Either route stores the new repos alongside the preloaded ruvnet entries so every future query can reference them.
+
+**Check what's inside:**
 ```bash
-# Rescan and update existing repos
-python3 scripts/seed_database.py --org ruvnet
-
-# Check what's in the database
-sqlite3 data/ruvscan.db "SELECT COUNT(*) FROM repos;"
+sqlite3 data/ruvscan.db "SELECT COUNT(*), MIN(org), MAX(org) FROM repos;"
 ```
 
-⚠️ **Note:** The database tracks `last_scan` timestamps. Re-running the seed script updates existing repos and adds new ones. **Rescan periodically** (weekly for development, monthly for production) to keep data fresh.
+⚠️ **Reminder:** the database keeps `last_scan` timestamps. Updating the same org simply refreshes the rows instead of duplicating them. If you rely on the bundled sample data, consider re-running the refresh monthly so the catalog stays current.
 
 📚 **Full Guide:** [Database Seeding Documentation](docs/DATABASE_SEEDING.md)
 
