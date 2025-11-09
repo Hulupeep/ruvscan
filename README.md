@@ -10,11 +10,58 @@
 
 RuvScan is a **Model Context Protocol (MCP) server** that connects to Claude Code CLI, Codex, and Claude Desktop. It turns GitHub into your AI's personal innovation scout — finding tools, frameworks, and solutions you'd never think to search for.
 
-**Not keyword matching. Not manual browsing. Just AI-powered discovery with O(log n) semantic search.**
+Oh, it's a work in progress - so suggest changes to make it better.
+
+
+
+It comes packaged with RUVNET repo but you can add ANY other repo like Andrej Kaparthy's or other folks on the edge of what you are working on. 
+
+ 
+
+---
+
+## 🎯 What Is This?
+
+**RuvScan is GitHub search that actually understands what you're trying to build.**
+
+### The Problem
+
+You're building something new. You know there's probably a library, framework, or algorithm out there that could 10× your project. But:
+
+- 🔍 **Search is broken** - You'd have to know the exact keywords
+- 📚 **Too many options** - Millions of repos, most irrelevant
+- 🎯 **Wrong domain** - The best solution might be in a totally different field
+- ⏰ **Takes forever** - Hours of browsing docs and READMEs
+
+### The Solution
+
+**RuvScan thinks like a creative developer**, not a search engine:
+
+```
+You: "I'm building an AI app. Context recall is too slow."
+
+RuvScan: "Here's a sublinear-time solver that could replace your
+          vector database queries. It's from scientific computing,
+          but the O(log n) algorithm applies perfectly to semantic
+          search. Here's how to integrate it..."
+```
+
+**It finds:**
+- ✨ **Outside-the-box solutions** - Tools from other domains that apply to yours
+- ⚡ **Performance wins** - Algorithms you didn't know existed
+- 🔧 **Easy integration** - Tells you exactly how to use what it finds
+- 🧠 **Creative transfers** - "This solved X, but you can use it for Y"
 
 ---
 
 ## ⚡ Install in 30 Seconds
+
+RuvScan works with **Claude Code CLI**, **Codex CLI**, and **Claude Desktop**. Pick your platform:
+
+
+
+Note: TWO Things need to happen to have this working. The BACKEND (docker ) must be running in a separate terminal window and the MCP needs to be added. 
+After installing do /MCP and check if it is installed correctly (you will see an x or worse, no tools showing). If either are true, just ask claude - hey fix my ruvscan mcp server. 
 
 ### For Claude Code CLI
 
@@ -29,6 +76,25 @@ claude mcp add ruvscan --scope user --env GITHUB_TOKEN=ghp_your_token -- uvx ruv
 # 3. Start using it!
 claude
 ```
+
+### For Codex CLI (Quick Install)
+
+```bash
+# 1. Start RuvScan backend
+git clone https://github.com/ruvnet/ruvscan.git && cd ruvscan
+docker compose up -d
+
+# 2. Install globally with pipx
+pipx install -e .
+
+# 3. Configure in ~/.codex/config.toml
+# See "For Codex CLI" section below for configuration details
+
+# 4. Start using it!
+codex
+```
+
+> ℹ️ **GitHub personal access token required.** RuvScan calls the GitHub API heavily; without a token you will immediately hit anonymous rate limits and scans will fail. Create a fine-grained or classic token with `repo` (read) and `read:org` scope, then expose it as `GITHUB_TOKEN` everywhere you run the MCP client and backend.
 
 ### For Claude Desktop
 
@@ -54,6 +120,101 @@ docker compose up -d
 ```
 
 **3. Restart Claude Desktop** (Cmd+Q and reopen)
+
+### For Codex CLI
+
+Codex CLI speaks the same MCP protocol. After starting the Docker backend:
+
+**Step 1: Install RuvScan globally with pipx**
+
+```bash
+cd ruvscan
+pipx install -e .
+```
+
+**Step 2: Configure Codex**
+
+Edit `~/.codex/config.toml` and add:
+
+```toml
+[mcp_servers.ruvscan]
+command = "ruvscan-mcp"
+
+[mcp_servers.ruvscan.env]
+GITHUB_TOKEN = "ghp_your_github_token_here"
+RUVSCAN_API_URL = "http://localhost:8000"
+```
+
+**Step 3: Test it works**
+
+```bash
+# From any directory
+cd /tmp
+codex mcp list | grep ruvscan
+# Should show: ruvscan  ruvscan-mcp  -  GITHUB_TOKEN=*****, RUVSCAN_API_URL=*****  -  enabled
+
+# Start a conversation
+codex
+> Can you scan the anthropics GitHub organization?
+```
+
+> ✅ **Global Installation**: RuvScan is now available in ALL projects and directories!
+
+---
+
+#### Alternative: Using codex mcp add (if available)
+
+If your Codex build includes the `mcp add` command:
+
+```bash
+codex mcp add --env GITHUB_TOKEN=ghp_your_token --env RUVSCAN_API_URL=http://localhost:8000 -- ruvscan-mcp ruvscan
+```
+
+> 🧪 When experimenting with `mcp dev`, run `mcp dev --transport sse src/ruvscan_mcp/mcp_stdio_server.py`.
+> The server now performs a health check and shuts down with a clear explanation if no client completes the handshake within five minutes (for example, when the transport is mismatched).
+
+---
+
+#### Troubleshooting Codex CLI
+
+**Check MCP server status:**
+```bash
+codex mcp list
+```
+
+**Verify command exists:**
+```bash
+which ruvscan-mcp
+# Should output: /home/your-user/.local/bin/ruvscan-mcp
+```
+
+**Test command directly:**
+```bash
+ruvscan-mcp --help
+```
+
+**View Codex logs:**
+```bash
+tail -f ~/.codex/log/codex-tui.log
+```
+
+📚 **Detailed Codex Setup Guide:** [docs/CODEX_CLI_SETUP.md](docs/CODEX_CLI_SETUP.md)
+
+### GitHub Token Checklist
+
+- Create a personal access token (classic or fine-grained) with read access to the repos you care about plus `read:org`. GitHub’s walkthrough lives here: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic
+- Export it in your shell (`export GITHUB_TOKEN=ghp_...`) before running `docker compose`, `uvicorn`, or `codex/claude mcp add` so the backend can authenticate API calls.
+- For Docker-based runs, copy `.env.example` to `.env` and drop the token there so the containers inherit it.
+- Optionally add the same value to `.env.local`; `scripts/seed_database.py` will pick it up automatically when seeding.
+- **Cost:** GitHub does not charge for issuing or using a PAT. Your scans only consume API rate quota on the account that created the token; standard rate limits refresh hourly. If you're on an enterprise plan, the usage just rolls into the org's normal API allowances.
+- Treat the token like a password. Store it in your secret manager and revoke it from https://github.com/settings/tokens if it ever leaks.
+
+### What `docker compose up` Runs
+
+- `mcp-server` (Python/FastAPI) — hosts the MCP HTTP API on port 8000, reads `GITHUB_TOKEN`, writes data to `./data/ruvscan.db`, and exposes `/scan`, `/query`, `/compare`, and `/analyze` endpoints.
+- `scanner` (Go) — background workers (port 8081 on the host ↔ 8080 in-container) that call the GitHub REST API, fetch README/topic metadata, and POST results back to the MCP server at `/ingest`.
+- `rust-engine` (Rust) — optional gRPC service for Johnson–Lindenstrauss O(log n) similarity; disabled by default and only launched when you run `docker compose --profile rust-debug up`.
+- Shared volumes — `./data` and `./logs` are bind-mounted so your SQLite DB and logs persist across container restarts.
 
 **📖 Full Installation Guide:** [docs/MCP_INSTALL.md](docs/MCP_INSTALL.md)
 
@@ -113,26 +274,24 @@ Estimated repositories: 50
 Message: Scan initiated - workers processing in background
 ```
 
-### Example 2: Find Solutions for Your Problem
+### Example 2: Make Reasoning Reproducible
 
-**You:** "I'm building a real-time AI app. My context retrieval from the vector database is too slow. What can help?"
+**You:** "I need to debug why my agent made a decision yesterday. Any deterministic tooling?"
 
-**Claude:** *Uses `query_leverage` tool and shows you:*
+**Claude:** *Uses `query_leverage` and surfaces FACT*
 
 ```
-Repository: ruvnet/sublinear-time-solver
-Relevance Score: 0.94
-Complexity: O(log n)
+Repository: ruvnet/FACT
+Relevance Score: 0.89
+Complexity: O(1)
 
-Summary: TRUE O(log n) matrix solver with Johnson-Lindenstrauss projection
+Summary: Deterministic caching framework that replays every LLM call with SHA256 hashes.
 
-Why This Helps: Don't search your entire vector database. Use JL projection
-to reduce dimensionality from 1536 → O(log n), then search in compressed space.
-600× faster with <3% accuracy loss.
+Why This Helps: Guarantees identical outputs for the same prompts, letting you trace agent decisions step by step.
 
-How to Use: Install as MCP tool via: npx sublinear-time-solver mcp
+How to Use: pip install fact-cache && from fact import FACTCache
 
-Capabilities: O(log n) solving, WASM acceleration, MCP integration
+Capabilities: Deterministic replay, prompt hashing, audit trails
 ```
 
 ### Example 3: Compare Frameworks
@@ -170,39 +329,22 @@ Reasoning Chain for ruvnet/sublinear-time-solver:
 (Retrieved from FACT deterministic cache)
 ```
 
----
+### Example 5: Mine Existing Ruvnet Stacks
 
-## 🎯 What Is This?
+**You:** "I already have the ruvnet repos seeded. What should I reuse for real-time streaming?"
 
-**RuvScan is GitHub search that actually understands what you're trying to build.**
-
-### The Problem
-
-You're building something new. You know there's probably a library, framework, or algorithm out there that could 10× your project. But:
-
-- 🔍 **Search is broken** - You'd have to know the exact keywords
-- 📚 **Too many options** - Millions of repos, most irrelevant
-- 🎯 **Wrong domain** - The best solution might be in a totally different field
-- ⏰ **Takes forever** - Hours of browsing docs and READMEs
-
-### The Solution
-
-**RuvScan thinks like a creative developer**, not a search engine:
-
+**Claude:** *Calls `query_leverage` and surfaces existing entries*
 ```
-You: "I'm building an AI app. Context recall is too slow."
+Repository: ruvnet/MidStream
+Relevance Score: 0.91
 
-RuvScan: "Here's a sublinear-time solver that could replace your
-          vector database queries. It's from scientific computing,
-          but the O(log n) algorithm applies perfectly to semantic
-          search. Here's how to integrate it..."
+Summary: WASM-accelerated multiplexing layer for realtime inference
+
+Why This Helps: Drop it in front of your LangChain stack to swap synchronous
+requests for bidirectional streams. Built to pair with sublinear-time-solver.
+
+How to Use: docker pull ghcr.io/ruvnet/midstream:latest
 ```
-
-**It finds:**
-- ✨ **Outside-the-box solutions** - Tools from other domains that apply to yours
-- ⚡ **Performance wins** - Algorithms you didn't know existed
-- 🔧 **Easy integration** - Tells you exactly how to use what it finds
-- 🧠 **Creative transfers** - "This solved X, but you can use it for Y"
 
 ---
 
@@ -288,6 +430,14 @@ When you install RuvScan as an MCP server, Claude gains 4 powerful tools:
 | **`analyze_reasoning`** | View FACT cache reasoning chains | "Why did you recommend that library?" |
 
 ---
+
+**What's new:**
+
+- RuvScan now fetches up to 200 repositories per scan, starting with a fast README sweep before deeper analysis.
+- The first time the MCP server starts it automatically preloads the entire `ruvnet` organization, so you can ask questions immediately.
+- Query responses include a concise summary and a structured Markdown briefing that highlights the opportunity, expected benefit, and integration path for each recommendation.
+- Every answer reminds you to share a Product Requirements Document (PRD) or similar artifact so the follow-up analysis can be even more specific.
+- The server now performs a health check and shuts down with a clear explanation if no client completes the handshake within five minutes (for example, when the transport is mismatched). This prevents the server from hanging silently when run with the wrong transport (for example, `mcp dev` without `--transport sse`) or when the backend API is unreachable.
 
 ## 🎬 Demo: Complete Workflow
 
@@ -397,20 +547,17 @@ for idea in ideas:
 
 **You ask:**
 ```
-"My AI app loads context from a vector database.
- It's too slow for real-time chat."
+"Pandas melts when I process multi-GB analytics data. I need something columnar."
 ```
 
 **RuvScan finds:**
 ```json
 {
-  "repo": "ruvnet/sublinear-time-solver",
-  "outside_box_reasoning": "Don't search the entire vector DB.
-    Use Johnson-Lindenstrauss projection to reduce dimensionality
-    from 1536 → O(log n), then search in compressed space.
-    600× faster with <3% accuracy loss.",
-  "integration_hint": "Install as MCP tool:
-    npx sublinear-time-solver mcp"
+  "repo": "apache/arrow",
+  "outside_box_reasoning": "Arrow gives you a columnar in-memory format with
+    vectorized kernels. Swap it in to keep data compressed on the wire and
+    eliminate Python GIL bottlenecks.",
+  "integration_hint": "pip install pyarrow && use datasets.to_table()"
 }
 ```
 
