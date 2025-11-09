@@ -252,6 +252,47 @@ Either route stores the new repos alongside the preloaded ruvnet entries so ever
 sqlite3 data/ruvscan.db "SELECT COUNT(*), MIN(org), MAX(org) FROM repos;"
 ```
 
+### What does RuvScan store locally?
+
+- Everything lives in the `data/ruvscan.db` SQLite file. Each row captures the repo’s owner, name, description, topics, README text, star count, primary language, and the `last_scan` timestamp so we know when it was fetched.
+- The MCP tools only read from this file; the only way new repos show up is when you seed or run a `scan_github` command (either via CLI or Claude).
+- No background internet crawling happens after a scan completes—what you see is exactly what’s stored in SQLite.
+
+### How do I see which repos are cached?
+
+```bash
+# Show every org/user currently in the catalog
+sqlite3 data/ruvscan.db "
+  SELECT org, COUNT(*) AS repos
+  FROM repos
+  GROUP BY org
+  ORDER BY repos DESC;"
+
+# Peek at the latest entries to confirm what's fresh
+sqlite3 data/ruvscan.db "
+  SELECT full_name, stars, datetime(last_scan) AS last_seen
+  FROM repos
+  ORDER BY last_scan DESC
+  LIMIT 10;"
+```
+
+Prefer a friendlier view? Run `./scripts/ruvscan cards --limit 20` to list the top cached repos with summaries.
+
+### How do I wipe the catalog and start over?
+
+1. Stop whatever is talking to RuvScan (`docker compose down` or Ctrl‑C the dev server).
+2. (Optional) Back up the old database: `cp data/ruvscan.db data/ruvscan.db.bak`.
+3. Remove the file: `rm -f data/ruvscan.db`.
+4. Seed again with whatever scope you want:
+
+```bash
+python3 scripts/seed_database.py --org ruvnet --limit 100
+# or
+./scripts/ruvscan scan org my-company --limit 50
+```
+
+Re‑start the MCP server and it will only know about the repos you just seeded or scanned.
+
 ⚠️ **Reminder:** the database keeps `last_scan` timestamps. Updating the same org simply refreshes the rows instead of duplicating them. If you rely on the bundled sample data, consider re-running the refresh monthly so the catalog stays current.
 
 📚 **Full Guide:** [Database Seeding Documentation](docs/DATABASE_SEEDING.md)
