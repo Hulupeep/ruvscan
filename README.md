@@ -10,7 +10,7 @@
 
 RuvScan is a **Model Context Protocol (MCP) server** that connects to Claude Code CLI, Codex, and Claude Desktop. It turns GitHub into your AI's personal innovation scout — finding tools, frameworks, and solutions you'd never think to search for.
 
-Oh, it's a work in progress - so suggest changes to make it better.
+**Oh, it's a work in progress - so suggest changes to make it better.*
 
 
 
@@ -22,11 +22,11 @@ It comes packaged with RUVNET repo but you can add ANY other repo like Andrej Ka
 
 ## 🎯 What Is This?
 
-**RuvScan is GitHub search that actually understands what you're trying to build.**
+**A GitHub search that actually understands what you're trying to build.**
 
 ### The Problem
 
-You're building something new. You know there's probably a library, framework, or algorithm out there that could 10× your project. But:
+You're building something new (an app or feature). You know there's probably a library, framework, or algorithm out there that could 10× your project. But:
 
 - 🔍 **Search is broken** - You'd have to know the exact keywords
 - 📚 **Too many options** - Millions of repos, most irrelevant
@@ -48,20 +48,54 @@ RuvScan: "Here's a sublinear-time solver that could replace your
 
 **It finds:**
 - ✨ **Outside-the-box solutions** - Tools from other domains that apply to yours
+
 - ⚡ **Performance wins** - Algorithms you didn't know existed
+
 - 🔧 **Easy integration** - Tells you exactly how to use what it finds
+
 - 🧠 **Creative transfers** - "This solved X, but you can use it for Y"
+
+  
+
+How you phrase your request helps the tool give you straightforward help or at the edge kind of solutions. Here are a few more examples of how you might phrase to show different solutions. (more examples further on)
+
+### Example requests
+
+The actual response will be in understandable plain English while suggesting state of the art. 
+
+
+
+  1. *“I just want a drop-in script that downloads my inbox and saves each email as JSON—what should I try?*” → byroot/mail or DusanKasan/parsemail for dead-simple IMAP/MIME to
+     structured JSON.
+  2. *“Give me a starter repo that already watches Gmail and writes summaries to a Notion page.”* → openai/gpt-email-summarizer-style templates or lucasmic/imap-to-webhook for plug-and-
+     play workflows.
+  3. *“Show me open-source email parsers I can drop into a Python summarizer—IMAP fetch, MIME decoding, nothing fancy.”* → DusanKasan/parsemail or inboxkitten/mail-parser for turnkey
+     IMAP/MIME handling.
+  4. “*I’m summarizing email on cheap Chromebooks. Which repos include tiny embeddings or approximate search so I can stay under 1 GB RAM?”* → ruvnet/sublinear-time-solver or facebook/faiss-lite to slot in sublinear similarity on low-RAM hardware.
+  5. “*Need policy/compliance topic detectors with clear audit trails. Point me to rule-based or interpretable NLP projects built for email streams.”* → ruvnet/FACT plus
+     CaselawAccessProject/legal-topic-models for deterministic caching plus transparent classifiers.
+  6. **“My pipeline can only see messages once. Find streaming or incremental NLP algorithms (reservoir sampling, online transformers, CRDT logs) that pair well with an email*
+     summarizer.”* → ruvnet/MidStream or openmessaging/stream-query for single-pass, reservoir-style processing.
+  7. “*Newsletters are 90 % of my inbox. Recommend DOM-first or layout-aware extraction toolkits I can chain before summarization so tables and sections survive.”* → postlight/mercury-
+     parser or mozilla/readability to strip and structure HTML before summarizing.
+  8. *“Legal demands reproducible summaries. Surface repos that memoize LLM calls (FACT-style hashing, deterministic agents) so the same thread always yields the same text.”* → ruvnet/
+     FACT or explosion/spaCy-ray patterns that hash embeddings/results for audit trails.
+  9. **“I’m willing to repurpose exotic tooling—sublinear solvers, sparse matrix DOM walkers, flow-based streaming engines—if you can explain how they’d accelerate large-scale email*
+     summarization. What should I investigate?”* → ruvnet/sublinear-time-solver (DOM walker mode), apache/arrow (columnar email batches), and ruvnet/flow-nexus (cost-propagation for batched summarization) as creative transfers.
 
 ---
 
-## ⚡ Install in 30 Seconds
+## ⚡ Install in 30ish Seconds
 
 RuvScan works with **Claude Code CLI**, **Codex CLI**, and **Claude Desktop**. Pick your platform:
 
 
 
-Note: TWO Things need to happen to have this working. The BACKEND (docker ) must be running in a separate terminal window and the MCP needs to be added. 
-After installing do /MCP and check if it is installed correctly (you will see an x or worse, no tools showing). If either are true, just ask claude - hey fix my ruvscan mcp server. 
+Note: TWO Things need to happen to have this working. 
+
+1. The BACKEND (docker ) must be running in a separate terminal window and 
+2. The MCP needs to be added to your CLI or claude 
+3. 2 After installing do /MCP and check if it is installed correctly (you will see an x or worse, no tools showing). If either are true, just ask claude - hey fix my ruvscan mcp server. 
 
 ### For Claude Code CLI
 
@@ -313,7 +347,7 @@ The goal is to surface repos that obviously help without making you stretch too 
 
 - **Your ask:** “Build a tool that scans incoming email for important policy updates and compliance requirements.”
 - **What surfaced:** `freeCodeCamp/mail-for-good`, `DusanKasan/parsemail`, `ruvnet/FACT`, etc. Those repos talk about *email parsing*, *campaign pipelines*, and *deterministic summaries*—keywords that overlap the request almost perfectly.
-- **What you expected:** `ruvnet/sublinear-time-solver` (which includes a DOM extractor that could chew through large HTML archives).
+- **What you might have expected:** `ruvnet/sublinear-time-solver` (which includes a DOM extractor that could chew through large HTML archives).
 - **Why it was skipped:** the solver’s README highlights *Johnson–Lindenstrauss projection*, *sparse matrix solvers*, and *Flow-Nexus streaming*. None of those tokens match “email,” “policy,” or “compliance,” so its overlap score stayed below the default `min_score=0.6`. RuvScan saw it as “clever infrastructure, but unrelated to your words,” so it deferred to mail-focused repos.
 
 ### How to explore outside-the-box options
